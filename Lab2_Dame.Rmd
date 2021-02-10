@@ -1,0 +1,6 @@
+---
+title: "Lab2"
+author: "Andrea Dame"
+date: "2/10/2021"
+output: html_document
+---
