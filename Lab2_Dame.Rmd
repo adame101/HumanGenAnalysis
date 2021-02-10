@@ -4,3 +4,185 @@ author: "Andrea Dame"
 date: "2/10/2021"
 output: html_document
 ---
+
+```{r, message=FALSE}
+library(tidyverse)
+```
+
+#Examples using Tidyverse
+```{r}
+x <- c(1, 2, 3, 4)
+str(x)
+```
+
+```{r}
+a <- c("1", "2", "3", "4")
+str(a)
+```
+
+```{r}
+x <- c(1, 2, 3, 4)
+y <- c(2, 4, 6, 8)
+z <- c(x, y)
+str(z)
+```
+```{r}
+b <- c(A, B)
+```
+
+```{r}
+SNPs <- c("AA", "AA", "GG", "AG", "AG", "AA","AG", "AA", "AA", "AA", "AG")
+str(SNPs)
+```
+
+```{r}
+SNPs_cat <- as_factor(SNPs)
+str(SNPs_cat)
+```
+
+# Loading UMass Covid data
+```{r}
+UMass_COVID_data <- read_csv("data/UMass_COVID_Data.csv")
+```
+
+```{r}
+str(UMass_COVID_data)
+```
+
+# Loading 23andMe SNP data
+```{r}
+mySNPs_cat25 <- read_tsv("data/23andMe_cat25.txt", comment = '#')
+```
+```{r}
+mySNPs_cat25 <- read_tsv("data/23andMe_cat25.txt", comment = '#',
+col_types = 
+  cols(
+    rsid = col_character(),
+    chromosome = col_factor(),
+    position = col_integer(),
+    genotype = col_factor()
+  ))
+```
+
+```{r}
+mySNPs_all <- read_tsv("data/23andMe_complete.txt", comment = '#')
+```
+
+```{r}
+mySNPs_all <- read_tsv("data/23andMe_complete.txt", comment = '#',
+col_types = 
+  cols(
+    rsid = col_character(),
+    chromosome = col_factor(),
+    position = col_integer(),
+    genotype = col_factor()
+  ))
+```
+# A first introduction to data manipulation
+
+```{r}
+UMass_COVID_data %>% 
+  filter(cases > 30) 
+```
+```{r}
+UMass_COVID_data %>% 
+  filter(collection_date >= '2021-01-02')
+```
+```{r}
+UMass_COVID_data %>% 
+  filter(collection_date >= '2021-01-02') %>% 
+  filter(cases > 30) 
+```
+```{r}
+UMass_COVID_data %>%
+  summarise(total_cases = sum(cases))
+```
+
+```{r}
+UMass_COVID_data %>%
+  mutate(detection = cases/tests)
+```
+
+```{r}
+UMass_COVID_data %>%
+  select(collection_date, tests, cases)
+```
+
+```{r}
+UMass_COVID_data_filter <- UMass_COVID_data %>% 
+  select(collection_date, tests, cases) %>% 
+  filter(collection_date >= '2021-02-01') %>% 
+  filter(cases > 30) %>% 
+  mutate(detection = cases/tests)
+UMass_COVID_data_filter
+```
+
+```{r}
+mySNPs_all %>% 
+  count(genotype)
+```
+```{r}
+mySNPs_all %>% 
+  arrange(-position)
+```
+
+```{r}
+mySNPs_all %>% 
+  group_by(chromosome, genotype) %>% 
+  count(genotype)
+```
+```{r}
+mySNPs_all %>% 
+  group_by(chromosome, genotype) %>% 
+  count(genotype)
+```
+```{r}
+library(knitr)
+kable(UMass_COVID_data[1:10, ], caption = "COVID-19 testing conducted on the UMass community ")
+```
+```{r}
+library(DT)
+datatable(UMass_COVID_data)
+```
+
+# Excercises
+# Exercise 1 Subset (select) the 23andMe Complete table to just position and genotype
+```{r}
+mySNPs_all %>%
+  select(position, genotype)
+```
+# Exercise 2 Filter to just the MT chromosome and remove genotypes A and T. (you can use != to remove)
+```{r}
+mySNPs_all %>%
+  filter(chromosome=="MT") %>%
+filter(genotype!="A") %>%
+  filter(genotype!= "T")
+```
+# Exercise 3 Use group_by() and summarize() to find the min positon, max position and total number of positions for each chromosomes.
+
+```{r}
+ex3table <- mySNPs_all %>%
+  group_by(chromosome) %>%
+    summarise(min= min(position), max=max(position), total_position = n())
+ex3table
+```
+# Exercise 4 Building on ex3 create using mutate a new column with the density of SNPs for each chromosome based the total number of SNPs divided by the max position - min position
+
+```{r}
+ex3 <- ex3table %>%
+  mutate(density_SNPs = total_position/max-min)
+ex3
+```
+# Exercise 5 Building on ex3 sort chromosomes based on SNP density.
+```{r}
+SNP_Density <- ex3 %>%
+  arrange(density_SNPs)
+SNP_Density
+```
+
+# Exercise 6 Make a table for your report using DT to show SNP density
+
+```{r}
+datatable(SNP_Density)
+```
+
